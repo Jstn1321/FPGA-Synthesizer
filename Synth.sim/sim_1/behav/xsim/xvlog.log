@@ -1,0 +1,8 @@
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Nerd Projects/FPGA-Projects/Synth/Synth.gen/sources_1/ip/blk_mem_gen_1/sim/blk_mem_gen_1.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module blk_mem_gen_1
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Nerd Projects/FPGA-Projects/Synth/Synth.srcs/sources_1/new/waveforms.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module waveforms
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Nerd Projects/FPGA-Projects/Synth/Synth.srcs/sim_1/new/tb_waveforms.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module waveforms_tb
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Nerd Projects/FPGA-Projects/Synth/Synth.sim/sim_1/behav/xsim/glbl.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module glbl

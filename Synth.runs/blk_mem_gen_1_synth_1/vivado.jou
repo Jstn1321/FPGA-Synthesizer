@@ -1,0 +1,24 @@
+#-----------------------------------------------------------
+# Vivado v2025.2 (64-bit)
+# SW Build 6299465 on Fri Nov 14 19:35:11 GMT 2025
+# IP Build 6300035 on Fri Nov 14 10:48:45 MST 2025
+# SharedData Build 6298862 on Thu Nov 13 04:50:51 MST 2025
+# Start of session at: Thu Jun 11 17:21:46 2026
+# Process ID         : 35640
+# Current directory  : C:/Nerd Projects/FPGA-Projects/Synth/Synth.runs/blk_mem_gen_1_synth_1
+# Command line       : vivado.exe -log blk_mem_gen_1.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source blk_mem_gen_1.tcl
+# Log file           : C:/Nerd Projects/FPGA-Projects/Synth/Synth.runs/blk_mem_gen_1_synth_1/blk_mem_gen_1.vds
+# Journal file       : C:/Nerd Projects/FPGA-Projects/Synth/Synth.runs/blk_mem_gen_1_synth_1\vivado.jou
+# Running On         : DESKTOP-LVTV4RD
+# Platform           : Windows Server 2016 or Windows 10
+# Operating System   : 26200
+# Processor Detail   : Intel(R) Core(TM) i5-14600KF
+# CPU Frequency      : 3494 MHz
+# CPU Physical cores : 14
+# CPU Logical cores  : 20
+# Host memory        : 34193 MB
+# Swap memory        : 25769 MB
+# Total Virtual      : 59963 MB
+# Available Virtual  : 23318 MB
+#-----------------------------------------------------------
+source blk_mem_gen_1.tcl -notrace

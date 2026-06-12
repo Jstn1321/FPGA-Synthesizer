@@ -1,0 +1,90 @@
+Time resolution is 1 ps
+ Block Memory Generator module loading initial data...
+ Block Memory Generator data initialization complete.
+Block Memory Generator module waveforms_tb.dut.sine_rom.inst.native_mem_module.blk_mem_gen_v8_4_12_inst is using a behavioral model for simulation which will not precisely model memory collision behavior.
+=== waveforms testbench start ===
+       phase |   square |      saw | triangle |     sine
+--------------------------------------------------------------
+
+-- Boundary points --
+phase=0x00000000 | square=-32767 | saw=-32768 | triangle=     0 | sine=     0
+phase=0x40000000 | square=-32767 | saw=-16384 | triangle= 16384 | sine=     0
+phase=0x7fffffff | square=-32767 | saw=    -1 | triangle= 32767 | sine=     0
+phase=0x80000000 | square= 32767 | saw=     0 | triangle= 32767 | sine=     0
+phase=0xc0000000 | square= 32767 | saw= 16384 | triangle= 16383 | sine=     0
+phase=0xffffffff | square= 32767 | saw= 32767 | triangle=     0 | sine=     0
+
+-- 16-step sweep (full cycle) --
+phase=0x00000000 | square=-32767 | saw=-32768 | triangle=     0 | sine=     0
+phase=0x10000000 | square=-32767 | saw=-28672 | triangle=  4096 | sine=     0
+phase=0x20000000 | square=-32767 | saw=-24576 | triangle=  8192 | sine=     0
+phase=0x30000000 | square=-32767 | saw=-20480 | triangle= 12288 | sine=     0
+phase=0x40000000 | square=-32767 | saw=-16384 | triangle= 16384 | sine=     0
+phase=0x50000000 | square=-32767 | saw=-12288 | triangle= 20480 | sine=     0
+phase=0x60000000 | square=-32767 | saw= -8192 | triangle= 24576 | sine=     0
+phase=0x70000000 | square=-32767 | saw= -4096 | triangle= 28672 | sine=     0
+phase=0x80000000 | square= 32767 | saw=     0 | triangle= 32767 | sine=     0
+phase=0x90000000 | square= 32767 | saw=  4096 | triangle= 28671 | sine=     0
+phase=0xa0000000 | square= 32767 | saw=  8192 | triangle= 24575 | sine=     0
+phase=0xb0000000 | square= 32767 | saw= 12288 | triangle= 20479 | sine=     0
+phase=0xc0000000 | square= 32767 | saw= 16384 | triangle= 16383 | sine=     0
+phase=0xd0000000 | square= 32767 | saw= 20480 | triangle= 12287 | sine=     0
+phase=0xe0000000 | square= 32767 | saw= 24576 | triangle=  8191 | sine=     0
+phase=0xf0000000 | square= 32767 | saw= 28672 | triangle=  4095 | sine=     0
+
+-- 256-step ROM sweep (one phase step per clock) --
+phase=0x00000000 | square=-32767 | saw=-32768 | triangle=     0 | sine=     0
+phase=0x01000000 | square=-32767 | saw=-32512 | triangle=   256 | sine=     0
+phase=0x02000000 | square=-32767 | saw=-32256 | triangle=   512 | sine=     0
+phase=0x03000000 | square=-32767 | saw=-32000 | triangle=   768 | sine=     0
+phase=0x04000000 | square=-32767 | saw=-31744 | triangle=  1024 | sine=     0
+phase=0x05000000 | square=-32767 | saw=-31488 | triangle=  1280 | sine=     0
+phase=0x06000000 | square=-32767 | saw=-31232 | triangle=  1536 | sine=     0
+phase=0x07000000 | square=-32767 | saw=-30976 | triangle=  1792 | sine=     0
+phase=0x08000000 | square=-32767 | saw=-30720 | triangle=  2048 | sine=     0
+phase=0x09000000 | square=-32767 | saw=-30464 | triangle=  2304 | sine=     0
+phase=0x0a000000 | square=-32767 | saw=-30208 | triangle=  2560 | sine=     0
+phase=0x0b000000 | square=-32767 | saw=-29952 | triangle=  2816 | sine=     0
+phase=0x0c000000 | square=-32767 | saw=-29696 | triangle=  3072 | sine=     0
+phase=0x0d000000 | square=-32767 | saw=-29440 | triangle=  3328 | sine=     0
+phase=0x0e000000 | square=-32767 | saw=-29184 | triangle=  3584 | sine=     0
+phase=0x0f000000 | square=-32767 | saw=-28928 | triangle=  3840 | sine=     0
+phase=0x10000000 | square=-32767 | saw=-28672 | triangle=  4096 | sine=     0
+phase=0x11000000 | square=-32767 | saw=-28416 | triangle=  4352 | sine=     0
+phase=0x12000000 | square=-32767 | saw=-28160 | triangle=  4608 | sine=     0
+phase=0x13000000 | square=-32767 | saw=-27904 | triangle=  4864 | sine=     0
+phase=0x14000000 | square=-32767 | saw=-27648 | triangle=  5120 | sine=     0
+phase=0x15000000 | square=-32767 | saw=-27392 | triangle=  5376 | sine=     0
+phase=0x16000000 | square=-32767 | saw=-27136 | triangle=  5632 | sine=     0
+phase=0x17000000 | square=-32767 | saw=-26880 | triangle=  5888 | sine=     0
+phase=0x18000000 | square=-32767 | saw=-26624 | triangle=  6144 | sine=     0
+phase=0x19000000 | square=-32767 | saw=-26368 | triangle=  6400 | sine=     0
+phase=0x1a000000 | square=-32767 | saw=-26112 | triangle=  6656 | sine=     0
+phase=0x1b000000 | square=-32767 | saw=-25856 | triangle=  6912 | sine=     0
+phase=0x1c000000 | square=-32767 | saw=-25600 | triangle=  7168 | sine=     0
+phase=0x1d000000 | square=-32767 | saw=-25344 | triangle=  7424 | sine=     0
+phase=0x1e000000 | square=-32767 | saw=-25088 | triangle=  7680 | sine=     0
+phase=0x1f000000 | square=-32767 | saw=-24832 | triangle=  7936 | sine=     0
+phase=0x20000000 | square=-32767 | saw=-24576 | triangle=  8192 | sine=     0
+phase=0x21000000 | square=-32767 | saw=-24320 | triangle=  8448 | sine=     0
+phase=0x22000000 | square=-32767 | saw=-24064 | triangle=  8704 | sine=     0
+phase=0x23000000 | square=-32767 | saw=-23808 | triangle=  8960 | sine=     0
+phase=0x24000000 | square=-32767 | saw=-23552 | triangle=  9216 | sine=     0
+phase=0x25000000 | square=-32767 | saw=-23296 | triangle=  9472 | sine=     0
+phase=0x26000000 | square=-32767 | saw=-23040 | triangle=  9728 | sine=     0
+phase=0x27000000 | square=-32767 | saw=-22784 | triangle=  9984 | sine=     0
+phase=0x28000000 | square=-32767 | saw=-22528 | triangle= 10240 | sine=     0
+phase=0x29000000 | square=-32767 | saw=-22272 | triangle= 10496 | sine=     0
+phase=0x2a000000 | square=-32767 | saw=-22016 | triangle= 10752 | sine=     0
+phase=0x2b000000 | square=-32767 | saw=-21760 | triangle= 11008 | sine=     0
+phase=0x2c000000 | square=-32767 | saw=-21504 | triangle= 11264 | sine=     0
+phase=0x2d000000 | square=-32767 | saw=-21248 | triangle= 11520 | sine=     0
+phase=0x2e000000 | square=-32767 | saw=-20992 | triangle= 11776 | sine=     0
+phase=0x2f000000 | square=-32767 | saw=-20736 | triangle= 12032 | sine=     0
+phase=0x30000000 | square=-32767 | saw=-20480 | triangle= 12288 | sine=     0
+phase=0x31000000 | square=-32767 | saw=-20224 | triangle= 12544 | sine=     0
+phase=0x32000000 | square=-32767 | saw=-19968 | triangle= 12800 | sine=     0
+phase=0x33000000 | square=-32767 | saw=-19712 | triangle= 13056 | sine=     0
+phase=0x34000000 | square=-32767 | saw=-19456 | triangle= 13312 | sine=     0
+phase=0x35000000 | square=-32767 | saw=-19200 | triangle= 13568 | sine=     0
+phase=0x36000000 | square=-32767 | saw=-18944 | triangle= 13824 | sine=     0
