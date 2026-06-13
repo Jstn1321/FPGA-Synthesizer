@@ -3,7 +3,7 @@ module synth_top(
     input clk,
     input pmod_rx,
     input btn,
-    input [3:0] sw,
+    input [15:0] sw,
     output [3:0] an,
     output [6:0] seg,
     output led
@@ -21,7 +21,7 @@ uart_rx u_uart (
     .bpm          (bpm)
 );
 
-wire [15:0] bpm_display = (bpm * 200 / 1023) + 40;
+wire [15:0] bpm_display = ((bpm * 200) >> 10) + 40;
 
 reg [18:0] refresh;
 always @(posedge clk) refresh <= refresh + 1;
@@ -81,7 +81,7 @@ wire signed [15:0] audio;
 occilator u_occilator(
     .clk          (clk),
     .increment    (increment),
-    .waveform     (sw),
+    .waveform     (sw[3:0]),
     .gate         (btn),
     .attack       (attack),
     .decay        (decay),
@@ -90,6 +90,28 @@ occilator u_occilator(
     .sample       (audio)
 );
 
-assign led = audio[15];
+wire signed [15:0] filtered_audio;
+wire [15:0] cutoff;
+wire [15:0] mod_cutoff;
+
+vcf u_vcf (
+    .clk (clk),
+    .audio_in (audio),
+    .alpha (mod_cutoff),
+    .audio_out (filtered_audio)
+);
+
+wire [15:0] lfo_rate;
+wire signed [15:0] lfo_out;
+
+lfo u_lfo (
+    .clk    (clk),
+    .rate   (lfo_rate),
+    .waveform (sw[15:12]),
+    .lfo_out    (lfo_out)
+);
+
+assign mod_cutoff = cutoff + lfo_out;
+assign led = filtered_audio[15];
 
 endmodule
