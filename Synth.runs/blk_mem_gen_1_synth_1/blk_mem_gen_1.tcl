@@ -58,8 +58,11 @@ if {$::dispatch::connected} {
 OPTRACE "blk_mem_gen_1_synth_1" START { ROLLUP_AUTO }
 set_param tcl.statsThreshold 360
 set_param general.usePosixSpawnForFork 1
-set_param chipscope.maxJobs 5
-set_param xicom.use_bs_reader 1
+set_msg_config -id {Synth 8-256} -limit 10000
+set_msg_config -id {Synth 8-638} -limit 10000
+set_msg_config  -id {Board 49-71}  -suppress 
+set_msg_config  -id {Board 49-71}  -severity {WARNING}  -suppress 
+set_msg_config  -string {{board_part}}  -severity {WARNING}  -suppress 
 set_param project.vivado.isBlockSynthRun true
 set_msg_config -msgmgr_mode ooc_run
 OPTRACE "Creating in-memory project" START { }
@@ -71,7 +74,6 @@ set_param synth.vivado.isSynthRun true
 set_msg_config -source 4 -id {IP_Flow 19-2162} -severity warning -new_severity info
 set_property webtalk.parent_dir {C:/Nerd Projects/FPGA-Projects/Synth/Synth.cache/wt} [current_project]
 set_property parent.project_path {C:/Nerd Projects/FPGA-Projects/Synth/Synth.xpr} [current_project]
-set_property XPM_LIBRARIES XPM_MEMORY [current_project]
 set_property default_lib xil_defaultlib [current_project]
 set_property target_language Verilog [current_project]
 set_property board_part_repo_paths {C:/Users/Justin Nguyen/AppData/Roaming/Xilinx/Vivado/2025.2/xhub/board_store/xilinx_board_store} [current_project]
@@ -80,7 +82,7 @@ set_property ip_output_repo {c:/Nerd Projects/FPGA-Projects/Synth/Synth.cache/ip
 set_property ip_cache_permissions {read write} [current_project]
 OPTRACE "Creating in-memory project" END { }
 OPTRACE "Adding files" START { }
-read_ip -quiet {{c:/Nerd Projects/FPGA-Projects/Synth/Synth.srcs/sources_1/ip/blk_mem_gen_1/blk_mem_gen_1.xci}}
+read_ip -quiet {{C:/Nerd Projects/FPGA-Projects/Synth/Synth.srcs/sources_1/ip/blk_mem_gen_1/blk_mem_gen_1.xci}}
 set_property used_in_implementation false [get_files -all {{c:/Nerd Projects/FPGA-Projects/Synth/Synth.gen/sources_1/ip/blk_mem_gen_1/blk_mem_gen_1_ooc.xdc}}]
 
 OPTRACE "Adding files" END { }

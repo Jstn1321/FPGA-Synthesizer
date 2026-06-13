@@ -8,7 +8,7 @@
   **** SW Build 6299465 on Fri Nov 14 19:35:11 GMT 2025
   **** IP Build 6300035 on Fri Nov 14 10:48:45 MST 2025
   **** SharedData Build 6298862 on Thu Nov 13 04:50:51 MST 2025
-  **** Start of session at: Thu Jun 11 17:21:46 2026
+  **** Start of session at: Fri Jun 12 18:48:24 2026
     ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
     ** Copyright 2022-2025 Advanced Micro Devices, Inc. All Rights Reserved.
 
@@ -16,5 +16,4 @@ Sourcing tcl script 'C:/Users/Justin Nguyen/AppData/Roaming/Xilinx/Vivado/Vivado
 source blk_mem_gen_1.tcl -notrace
 WARNING: [Board 49-91] Board repository path 'Nguyen\AppData\Roaming\Xilinx\Vivado\2025.2\data\boards\board_files\basys3\1.2' does not exist, it will not be used to search board files.
 WARNING: [Vivado 12-9135] Ignoring repo path (C:/Users/Justin C:/Nerd Projects/FPGA-Projects/Synth/Synth.runs/blk_mem_gen_1_synth_1/Nguyen/AppData/Roaming/Xilinx/Vivado/2025.2/xhub/board_store/xilinx_board_store) because it contains no board files
-ERROR: [Board 49-71] The board_part definition was not found for digilentinc.com:basys3:part0:1.2. The project's board_part property was not set, but the project's part property was set to xc7a35tcpg236-1. Valid board_part values can be retrieved with the 'get_board_parts' Tcl command. Check if board.repoPaths parameter is set and the board_part is installed from the tcl app store.
-INFO: [Common 17-206] Exiting Vivado at Thu Jun 11 17:21:52 2026...
+INFO: [Common 17-206] Exiting Vivado at Fri Jun 12 18:48:30 2026...

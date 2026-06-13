@@ -1,0 +1,7 @@
+Synth.runs/
+Synth.sim/
+Synth.cache/
+Synth.ip_user_files/
+*.jou
+*.log
+*.pb
