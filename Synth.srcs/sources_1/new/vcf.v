@@ -24,13 +24,20 @@ module vcf(
     input clk,
     input signed [15:0] audio_in,
     input [15:0] alpha,
+    input [15:0] resonance,
     output reg signed [15:0] audio_out
-    );
-    
-    reg signed [31:0] temp;
-    
-    always @ (posedge clk) begin
-        temp <= ($signed({1'b0,alpha}) * (audio_in - audio_out));
-        audio_out <= audio_out + temp[30:15] ;
+);
+
+    wire signed [31:0] feedback;
+    wire signed [15:0] effective_audio_in;
+    wire signed [31:0] temp;
+
+    assign feedback = $signed({1'b0,resonance}) * audio_out;
+    assign effective_audio_in = audio_in - feedback[30:15];
+    assign temp = $signed({1'b0,alpha}) * (effective_audio_in - audio_out);
+
+    always @(posedge clk) begin
+        audio_out <= audio_out + temp[30:15];
     end
+
 endmodule

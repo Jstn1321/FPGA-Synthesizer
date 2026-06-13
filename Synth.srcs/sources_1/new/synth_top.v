@@ -2,6 +2,8 @@
 module synth_top(
     input clk,
     input pmod_rx,
+    input vcf_rx,
+    input lfo_rx,
     input btn,
     input [15:0] sw,
     output [3:0] an,
@@ -111,7 +113,37 @@ lfo u_lfo (
     .lfo_out    (lfo_out)
 );
 
-assign mod_cutoff = cutoff + lfo_out;
+wire [15:0] cutoff, resonance;
+uart_rx u_vcf_uart (
+    .clk       (clk),
+    .rx        (vcf_rx),
+    .cutoff    (cutoff),
+    .resonance (resonance),
+    .attack    (),
+    .decay     (),
+    .sustain   (),
+    .release_time(),
+    .bpm       ()
+);
+
+wire [15:0] lfo_rate, lfo_depth;
+
+
+uart_rx u_lfo_uart (
+    .clk       (clk),
+    .rx        (lfo_rx),
+    .lfo_rate  (lfo_rate),
+    .lfo_depth (lfo_depth),
+    .attack    (),
+    .decay     (),
+    .sustain   (),
+    .release_time(),
+    .bpm       ()
+);
+
+wire signed [15:0] lfo_scaled = (lfo_out * lfo_depth) >> 16;
+
+assign mod_cutoff = cutoff + lfo_scaled;
 assign led = filtered_audio[15];
 
 endmodule

@@ -5,6 +5,10 @@ module uart_rx #(
 )(
     input  wire        clk,
     input  wire        rx,
+    output reg  [15:0] cutoff,
+    output reg  [15:0] resonance,
+    output reg  [15:0] lfo_rate,
+    output reg  [15:0] lfo_depth,
     output reg  [15:0] attack,
     output reg  [15:0] decay,
     output reg  [15:0] sustain,
@@ -105,6 +109,22 @@ always @(posedge clk) begin
                                ({value_high, data} > bpm + 4 ||
                                 {value_high, data} + 4 < bpm))
                                bpm <= {value_high, data};
+                    8'h08: if ({value_high, data} <= 1023 &&
+                               ({value_high, data} > cutoff + 4 ||
+                                {value_high, data} + 4 < cutoff))
+                               cutoff <= {value_high, data};
+                    8'h09: if ({value_high, data} <= 1023 &&
+                               ({value_high, data} > resonance + 4 ||
+                                {value_high, data} + 4 < resonance))
+                               resonance <= {value_high, data};
+                    8'h0A: if ({value_high, data} <= 1023 &&
+                               ({value_high, data} > lfo_rate + 4 ||
+                                {value_high, data} + 4 < lfo_rate))
+                               lfo_rate <= {value_high, data};
+                    8'h0B: if ({value_high, data} <= 1023 &&
+                               ({value_high, data} > lfo_depth + 4 ||
+                                {value_high, data} + 4 < lfo_depth))
+                               lfo_depth <= {value_high, data};
                 endcase
                 pkt_state <= WAIT_SYNC;
             end
