@@ -23,7 +23,7 @@
 module occilator(
     input clk,
     input [31:0] increment,
-    input [1:0] waveform,
+    input [3:0] waveform,
     input gate,
     input [15:0] attack,
     input [15:0] decay,
@@ -53,15 +53,10 @@ module occilator(
     reg [15:0] reg_sample;
     //0 is sqr 1 is saw 2 is tri 3 is sin
     always @ (posedge clk) begin
-        if (waveform == 2'd0) begin
-            reg_sample <= square;
-        end else if (waveform == 2'd1) begin
-            reg_sample <= saw;
-        end else if (waveform == 2'd2) begin
-            reg_sample <= triangle;
-        end else if (waveform == 2'd3) begin
-            reg_sample <= sine;
-        end 
+        if (waveform[0]) reg_sample <= square;
+        else if (waveform[1]) reg_sample <= saw;
+        else if (waveform[2]) reg_sample <= triangle;
+        else if (waveform[3]) reg_sample <= sine;
     end
     
     wire [15:0] env;

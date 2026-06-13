@@ -1,9 +1,12 @@
 `timescale 1ns / 1ps
 module synth_top(
-    input        clk,
-    input        pmod_rx,
+    input clk,
+    input pmod_rx,
+    input btn,
+    input [3:0] sw,
     output [3:0] an,
-    output [6:0] seg
+    output [6:0] seg,
+    output led
 );
 
 wire [15:0] attack, decay, sustain, release_time, bpm;
@@ -20,13 +23,19 @@ uart_rx u_uart (
 
 wire [15:0] bpm_display = (bpm * 200 / 1023) + 40;
 
-wire [3:0] digit0 = bpm_display % 10;
-wire [3:0] digit1 = (bpm_display / 10) % 10;
-wire [3:0] digit2 = (bpm_display / 100) % 10;
-wire [3:0] digit3 = (bpm_display / 1000) % 10;
-
 reg [18:0] refresh;
 always @(posedge clk) refresh <= refresh + 1;
+
+reg [15:0] bpm_latch;
+always @(posedge clk) begin
+    if (refresh[18:17] == 2'b11 && refresh[16:0] == 0)
+        bpm_latch <= bpm_display;
+end
+
+wire [3:0] digit0 = bpm_latch % 10;
+wire [3:0] digit1 = (bpm_latch / 10) % 10;
+wire [3:0] digit2 = (bpm_latch / 100) % 10;
+wire [3:0] digit3 = (bpm_latch / 1000) % 10;
 
 reg [3:0] digit;
 always @(*) begin
@@ -39,17 +48,6 @@ always @(*) begin
 end
 
 assign an = ~(4'b0001 << refresh[18:17]);
-
-reg [15:0] bpm_latch;
-always @(posedge clk) begin
-    if (refresh[18:17] == 2'b11 && refresh[16:0] == 0)
-        bpm_latch <= bpm_display;
-end
-
-wire [3:0] digit0 = bpm_latch % 10;
-wire [3:0] digit1 = (bpm_latch / 10) % 10;
-wire [3:0] digit2 = (bpm_latch / 100) % 10;
-wire [3:0] digit3 = (bpm_latch / 1000) % 10;
 
 reg [6:0] seg_reg;
 always @(*) begin
@@ -68,5 +66,30 @@ always @(*) begin
     endcase
 end
 assign seg = seg_reg;
+
+wire [6:0] note;
+assign note = 7'd69;
+
+wire [31:0] increment;
+note_to_increment u_note_to_increment(
+    .clk       (clk),
+    .note      (note),
+    .increment (increment)
+);
+
+wire signed [15:0] audio;
+occilator u_occilator(
+    .clk          (clk),
+    .increment    (increment),
+    .waveform     (sw),
+    .gate         (btn),
+    .attack       (attack),
+    .decay        (decay),
+    .sustain      (sustain),
+    .release_time (release_time),
+    .sample       (audio)
+);
+
+assign led = audio[15];
 
 endmodule
