@@ -18,7 +18,6 @@ uart_rx u_uart (
     .bpm          (bpm)
 );
 
-// Map raw 0-1023 to 40-240 BPM for display
 wire [15:0] bpm_display = (bpm * 200 / 1023) + 40;
 
 wire [3:0] digit0 = bpm_display % 10;
@@ -29,7 +28,6 @@ wire [3:0] digit3 = (bpm_display / 1000) % 10;
 reg [18:0] refresh;
 always @(posedge clk) refresh <= refresh + 1;
 
-// use top 2 bits for digit select
 reg [3:0] digit;
 always @(*) begin
     case (refresh[18:17])

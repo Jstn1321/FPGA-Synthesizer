@@ -24,6 +24,11 @@ module occilator(
     input clk,
     input [31:0] increment,
     input [1:0] waveform,
+    input gate,
+    input [15:0] attack,
+    input [15:0] decay,
+    input [15:0] sustain,
+    input [15:0] release_time,
     output signed [15:0] sample
     );
 
@@ -48,16 +53,34 @@ module occilator(
     reg [15:0] reg_sample;
     //0 is sqr 1 is saw 2 is tri 3 is sin
     always @ (posedge clk) begin
-        if (waveform == 4'd0) begin
+        if (waveform == 2'd0) begin
             reg_sample <= square;
-        end else if (waveform == 4'd1) begin
+        end else if (waveform == 2'd1) begin
             reg_sample <= saw;
-        end else if (waveform == 4'd2) begin
+        end else if (waveform == 2'd2) begin
             reg_sample <= triangle;
-        end else if (waveform == 4'd3) begin
+        end else if (waveform == 2'd3) begin
             reg_sample <= sine;
         end 
     end
     
-    assign sample = reg_sample;
+    wire [15:0] env;
+    
+    adsr u_adsr (
+    .clk    (clk),
+    .attack (attack),
+    .sustain    (sustain),
+    .decay  (decay),
+    .release_time   (release_time),
+    .gate   (gate),
+    .env_out (env)
+    );
+    
+    vca u_vca (
+    .clk    (clk),
+    .audio_in   (reg_sample),
+    .env    (env),
+    .audio_out  (sample)
+    );
+
 endmodule
