@@ -27,7 +27,7 @@ module vcf(
 );
 
 reg signed [15:0] s1, s2, s3, s4;
-reg signed [31:0] fb, temp1, temp2, temp3, temp4;
+(* use_dsp = "yes" *) reg signed [31:0] fb, temp1, temp2, temp3, temp4;
 reg signed [15:0] in1;
 
 always @(posedge clk) begin

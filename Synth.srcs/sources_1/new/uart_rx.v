@@ -3,17 +3,22 @@ module uart_rx #(
     parameter CLK_FREQ  = 100_000_000,
     parameter BAUD_RATE = 115200
 )(
-    input  wire        clk,
-    input  wire        rx,
-    output reg  [15:0] cutoff,
-    output reg  [15:0] resonance,
-    output reg  [15:0] lfo_rate,
-    output reg  [15:0] lfo_depth,
-    output reg  [15:0] attack,
-    output reg  [15:0] decay,
-    output reg  [15:0] sustain,
-    output reg  [15:0] release_time,
-    output reg  [15:0] bpm
+    input wire clk,
+    input wire rx,
+    output reg gate_out,
+    output reg [6:0] note,
+    output reg [15:0] volume,
+    output reg seq_run,
+    output reg seq_reset,
+    output reg [15:0] cutoff,
+    output reg [15:0] resonance,
+    output reg [15:0] lfo_rate,
+    output reg [15:0] lfo_depth,
+    output reg [15:0] attack,
+    output reg [15:0] decay,
+    output reg [15:0] sustain,
+    output reg [15:0] release_time,
+    output reg [15:0] bpm
 );
 
 localparam CLKS_PER_BIT = CLK_FREQ / BAUD_RATE;
@@ -30,31 +35,47 @@ reg [7:0]  rx_byte;
 reg [7:0]  data;
 reg        valid;
 
+reg rx_sync1 = 1'b1;
+reg rx_sync2 = 1'b1;
+
+always @(posedge clk) begin
+    rx_sync1 <= rx;
+    rx_sync2 <= rx_sync1;
+end
+
 always @(posedge clk) begin
     valid <= 0;
     case (uart_state)
-        IDLE:  if (!rx) begin
+        IDLE:  if (!rx_sync2) begin
             uart_state <= START;
             clk_count  <= 0;
         end
 
         START: if (clk_count == CLKS_PER_BIT/2) begin
-            uart_state <= DATA;
-            clk_count  <= 0;
-            bit_index  <= 0;
-        end else clk_count <= clk_count + 1;
+            if (!rx_sync2) begin
+                uart_state <= DATA;
+                clk_count  <= 0;
+                bit_index  <= 0;
+            end else begin
+                uart_state <= IDLE;
+            end
+        end else begin
+            clk_count <= clk_count + 1;
+        end
 
         DATA: if (clk_count == CLKS_PER_BIT) begin
             clk_count          <= 0;
-            rx_byte[bit_index] <= rx;
+            rx_byte[bit_index] <= rx_sync2;
             if (bit_index == 7) uart_state <= STOP;
             else bit_index <= bit_index + 1;
         end else clk_count <= clk_count + 1;
 
         STOP: if (clk_count == CLKS_PER_BIT) begin
+            if (rx_sync2) begin
+                data  <= rx_byte;
+                valid <= 1;
+            end
             uart_state <= IDLE;
-            data       <= rx_byte;
-            valid      <= 1;
         end else clk_count <= clk_count + 1;
     endcase
 end
@@ -76,7 +97,7 @@ always @(posedge clk) begin
                     pkt_state <= WAIT_ID;
             end
             WAIT_ID: begin
-                if (data >= 8'h01 && data <= 8'h0B) begin
+                if (data >= 8'h01 && data <= 8'h0F) begin
                     param_id  <= data;
                     pkt_state <= WAIT_HIGH;
                 end else begin
@@ -109,6 +130,11 @@ always @(posedge clk) begin
                                ({value_high, data} > bpm + 4 ||
                                 {value_high, data} + 4 < bpm))
                                bpm <= {value_high, data};
+                    8'h06: begin
+                            if (data <= 8'd127)
+                                    note <= data[6:0];
+                            end     
+                    8'h07: gate_out <= data[0];
                     8'h08: if ({value_high, data} <= 1023 &&
                                ({value_high, data} > cutoff + 4 ||
                                 {value_high, data} + 4 < cutoff))
@@ -125,6 +151,12 @@ always @(posedge clk) begin
                                ({value_high, data} > lfo_depth + 4 ||
                                 {value_high, data} + 4 < lfo_depth))
                                lfo_depth <= {value_high, data};
+                    8'h0D: seq_run   <= data[0];
+                    8'h0E: if ({value_high, data} <= 1023 &&
+                               ({value_high, data} > volume + 4 ||
+                                {value_high, data} + 4 < volume))
+                               volume <= {value_high, data};
+                    8'h0F: seq_reset <= data[0];
                 endcase
                 pkt_state <= WAIT_SYNC;
             end

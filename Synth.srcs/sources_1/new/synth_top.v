@@ -1,9 +1,7 @@
 `timescale 1ns / 1ps
 module synth_top(
     input clk,
-    input pmod_rx,
-    input vcf_rx,
-    input lfo_rx,
+    input teensy_rx,
     input btn,
     input [15:0] sw,
     output [3:0] an,
@@ -14,20 +12,11 @@ module synth_top(
 wire [15:0] attack, decay, sustain, release_time, bpm;
 wire [15:0] cutoff, resonance;
 wire [15:0] lfo_rate, lfo_depth;
-wire [15:0] mod_cutoff;
+reg [15:0] mod_cutoff;
+reg [15:0] alpha_pipe;
 wire signed [15:0] lfo_out;
-
-uart_rx u_uart (
-    .clk          (clk),
-    .rx           (pmod_rx),
-    .attack       (attack),
-    .decay        (decay),
-    .sustain      (sustain),
-    .release_time (release_time),
-    .bpm          (bpm)
-);
-
-wire [15:0] bpm_display = ((bpm * 200) >> 10) + 40;
+wire [6:0] note;
+wire [15:0] bpm_display = note;
 
 reg [18:0] refresh;
 always @(posedge clk) refresh <= refresh + 1;
@@ -74,8 +63,7 @@ end
 
 assign seg = seg_reg;
 
-wire [6:0] note;
-assign note = 7'd69;
+
 
 wire [31:0] increment;
 note_to_increment u_note_to_increment(
@@ -84,12 +72,14 @@ note_to_increment u_note_to_increment(
     .increment (increment)
 );
 
+wire gate_from_uart;
+wire gate_sig = gate_from_uart | btn;
 wire signed [15:0] audio;
 occilator u_occilator(
     .clk          (clk),
     .increment    (increment),
     .waveform     (sw[3:0]),
-    .gate         (btn),
+    .gate         (gate_sig),
     .attack       (attack),
     .decay        (decay),
     .sustain      (sustain),
@@ -98,11 +88,18 @@ occilator u_occilator(
 );
 
 wire signed [15:0] filtered_audio;
+wire signed [31:0] lfo_scaled_wide = lfo_out * $signed({1'b0, lfo_depth});
+wire signed [15:0] lfo_scaled = lfo_scaled_wide[30:15];
+
+always @(posedge clk) begin
+    mod_cutoff <= cutoff + lfo_scaled;
+    alpha_pipe <= mod_cutoff;
+end
 
 vcf u_vcf (
     .clk (clk),
     .audio_in (audio),
-    .alpha (mod_cutoff),
+    .alpha (alpha_pipe),
     .resonance (resonance),
     .audio_out (filtered_audio)
 );
@@ -114,34 +111,29 @@ lfo u_lfo (
     .lfo_out    (lfo_out)
 );
 
-uart_rx u_vcf_uart (
-    .clk       (clk),
-    .rx        (vcf_rx),
-    .cutoff    (cutoff),
-    .resonance (resonance),
-    .attack    (),
-    .decay     (),
-    .sustain   (),
-    .release_time(),
-    .bpm       ()
+wire [15:0] volume;
+wire seq_run;
+wire seq_reset;
+
+uart_rx u_teensy (
+    .clk          (clk),
+    .rx           (teensy_rx),
+    .attack       (attack),
+    .decay        (decay),
+    .sustain      (sustain),
+    .release_time (release_time),
+    .bpm          (bpm),
+    .note         (note),
+    .gate_out     (gate_from_uart),
+    .cutoff       (cutoff),
+    .resonance    (resonance),
+    .lfo_rate     (lfo_rate),
+    .lfo_depth    (lfo_depth),
+    .seq_run (seq_run),
+    .volume (volume),
+    .seq_reset  (seq_reset)
 );
 
-uart_rx u_lfo_uart (
-    .clk       (clk),
-    .rx        (lfo_rx),
-    .lfo_rate  (lfo_rate),
-    .lfo_depth (lfo_depth),
-    .attack    (),
-    .decay     (),
-    .sustain   (),
-    .release_time(),
-    .bpm       ()
-);
-
-wire signed [31:0] lfo_scaled_wide = lfo_out * $signed({1'b0, lfo_depth});
-wire signed [15:0] lfo_scaled = lfo_scaled_wide[30:15];
-
-assign mod_cutoff = cutoff + lfo_scaled;
 assign led = filtered_audio[15];
 
 endmodule
