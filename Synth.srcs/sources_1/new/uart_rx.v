@@ -76,7 +76,7 @@ always @(posedge clk) begin
                     pkt_state <= WAIT_ID;
             end
             WAIT_ID: begin
-                if (data >= 8'h01 && data <= 8'h05) begin
+                if (data >= 8'h01 && data <= 8'h0B) begin
                     param_id  <= data;
                     pkt_state <= WAIT_HIGH;
                 end else begin

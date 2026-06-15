@@ -12,6 +12,10 @@ module synth_top(
 );
 
 wire [15:0] attack, decay, sustain, release_time, bpm;
+wire [15:0] cutoff, resonance;
+wire [15:0] lfo_rate, lfo_depth;
+wire [15:0] mod_cutoff;
+wire signed [15:0] lfo_out;
 
 uart_rx u_uart (
     .clk          (clk),
@@ -67,6 +71,7 @@ always @(*) begin
         default: seg_reg = 7'b1111111;
     endcase
 end
+
 assign seg = seg_reg;
 
 wire [6:0] note;
@@ -93,18 +98,14 @@ occilator u_occilator(
 );
 
 wire signed [15:0] filtered_audio;
-wire [15:0] cutoff;
-wire [15:0] mod_cutoff;
 
 vcf u_vcf (
     .clk (clk),
     .audio_in (audio),
     .alpha (mod_cutoff),
+    .resonance (resonance),
     .audio_out (filtered_audio)
 );
-
-wire [15:0] lfo_rate;
-wire signed [15:0] lfo_out;
 
 lfo u_lfo (
     .clk    (clk),
@@ -113,7 +114,6 @@ lfo u_lfo (
     .lfo_out    (lfo_out)
 );
 
-wire [15:0] cutoff, resonance;
 uart_rx u_vcf_uart (
     .clk       (clk),
     .rx        (vcf_rx),
@@ -125,9 +125,6 @@ uart_rx u_vcf_uart (
     .release_time(),
     .bpm       ()
 );
-
-wire [15:0] lfo_rate, lfo_depth;
-
 
 uart_rx u_lfo_uart (
     .clk       (clk),
@@ -141,7 +138,8 @@ uart_rx u_lfo_uart (
     .bpm       ()
 );
 
-wire signed [15:0] lfo_scaled = (lfo_out * lfo_depth) >> 16;
+wire signed [31:0] lfo_scaled_wide = lfo_out * $signed({1'b0, lfo_depth});
+wire signed [15:0] lfo_scaled = lfo_scaled_wide[30:15];
 
 assign mod_cutoff = cutoff + lfo_scaled;
 assign led = filtered_audio[15];
