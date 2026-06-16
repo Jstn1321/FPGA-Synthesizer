@@ -15,8 +15,16 @@ wire [15:0] lfo_rate, lfo_depth;
 reg [15:0] mod_cutoff;
 reg [15:0] alpha_pipe;
 wire signed [15:0] lfo_out;
-wire [6:0] note;
-wire [15:0] bpm_display = note;
+wire [6:0] kbd_note;
+wire [6:0] active_note;
+wire [6:0] seq_note_out;
+wire seq_gate_out;
+wire [15:0] bpm_display = active_note;
+
+wire [3:0] write_step;
+wire [6:0] write_note;
+wire write_enable;
+wire [15:0] active_steps;
 
 reg [18:0] refresh;
 always @(posedge clk) refresh <= refresh + 1;
@@ -68,12 +76,11 @@ assign seg = seg_reg;
 wire [31:0] increment;
 note_to_increment u_note_to_increment(
     .clk       (clk),
-    .note      (note),
+    .note      (active_note),
     .increment (increment)
 );
-
+wire gate_sig;
 wire gate_from_uart;
-wire gate_sig = gate_from_uart | btn;
 wire signed [15:0] audio;
 occilator u_occilator(
     .clk          (clk),
@@ -123,7 +130,11 @@ uart_rx u_teensy (
     .sustain      (sustain),
     .release_time (release_time),
     .bpm          (bpm),
-    .note         (note),
+    .note(kbd_note),
+    .write_step(write_step),
+    .write_note(write_note),
+    .write_enable(write_enable),
+    .active_steps(active_steps),
     .gate_out     (gate_from_uart),
     .cutoff       (cutoff),
     .resonance    (resonance),
@@ -134,6 +145,30 @@ uart_rx u_teensy (
     .seq_reset  (seq_reset)
 );
 
+wire step_pulse;
+
+bpm_clock u_bpm(
+    .clk    (clk),
+    .bpm    (bpm),
+    .running    (seq_run),
+    .step_pulse (step_pulse)
+);
+
+seq u_seq(
+    .clk    (clk),
+    .step_pulse (step_pulse),
+    .running   (seq_run),
+    .reset  (seq_reset),
+    .write_note (write_note),
+    .write_step (write_step),
+    .write_enable   (write_enable),
+    .active (active_steps),
+    .note_out   (seq_note_out),
+    .gate_out   (seq_gate_out),
+    .current_step   ()
+);
+assign gate_sig = seq_run ? seq_gate_out : (gate_from_uart | btn);
+assign active_note = seq_run ? seq_note_out : kbd_note;
 assign led = filtered_audio[15];
 
 endmodule

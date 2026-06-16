@@ -59,6 +59,10 @@ MIDIDevice midi(myusb);
 #define ID_SEQ_RUN   0x0D
 #define ID_VOLUME    0x0E
 #define ID_SEQ_RESET 0x0F
+#define ID_WRITE_STEP   0x10
+#define ID_WRITE_NOTE   0x11
+#define ID_ACTIVE_HI    0x12
+#define ID_ACTIVE_LO    0x13
 
 // State
 byte seq_notes[16];
@@ -226,6 +230,25 @@ void updateDisplay1() {
     }
 }
 
+void sendActiveSteps() {
+    uint16_t mask = 0;
+
+    for (int i = 0; i < 16; i++) {
+        if (seq_active[i])
+            mask |= (1 << i);
+    }
+
+    Serial1.write(0xFF);
+    Serial1.write(ID_ACTIVE_HI);
+    Serial1.write(0);
+    Serial1.write((mask >> 8) & 0xFF);
+
+    Serial1.write(0xFF);
+    Serial1.write(ID_ACTIVE_LO);
+    Serial1.write(0);
+    Serial1.write(mask & 0xFF);
+}
+
 // ─── Screen 2 — Sequencer ────────────────────────────────────────────────────
 
 void drawStaticUI2() {
@@ -340,12 +363,12 @@ void setup() {
     tft2.setRotation(1);
     drawStaticUI2();
     drawSeqGrid();
-
+    
     for (int i = 0; i < 16; i++) {
         seq_notes[i]  = 60;
         seq_active[i] = true;
     }
-
+    sendActiveSteps();
     send_val(ID_SUSTAIN, v_sustain);
 }
 
@@ -378,8 +401,10 @@ void loop() {
             current_note         = data1;
             gate_on              = true;
             seq_notes[edit_step] = data1;
+            send_val(ID_WRITE_STEP, edit_step);
+            send_val(ID_WRITE_NOTE, data1);
             send_raw(ID_NOTE, data1);
-            send_val(ID_GATE, 127);
+            send_val(ID_GATE, 1);
             p_step = -1;  // force seq grid redraw
         }
 
@@ -413,7 +438,7 @@ void loop() {
                 case ENCODER_CLICK_CC:
                     if (data2 > 63) {
                         seq_running = !seq_running;
-                        send_val(ID_SEQ_RUN, seq_running ? 127 : 0);
+                        send_val(ID_SEQ_RUN, seq_running ? 1 : 0);
                     }
                     break;
 
@@ -423,11 +448,12 @@ void loop() {
                             seq_notes[i]  = 60;
                             seq_active[i] = true;
                         }
+                        sendActiveSteps();
                         edit_step   = 0;
                         seq_running = false;
                         seq_reset   = true;
                         send_val(ID_SEQ_RUN,   0);
-                        send_val(ID_SEQ_RESET, 127);
+                        send_val(ID_SEQ_RESET, 1);
                         p_step    = -1;
                         p_running = !seq_running;
                     }

@@ -10,6 +10,10 @@ module uart_rx #(
     output reg [15:0] volume,
     output reg seq_run,
     output reg seq_reset,
+    output reg [3:0] write_step,
+    output reg [6:0] write_note,
+    output reg write_enable,
+    output reg [15:0] active_steps,
     output reg [15:0] cutoff,
     output reg [15:0] resonance,
     output reg [15:0] lfo_rate,
@@ -90,6 +94,8 @@ reg [7:0] param_id;
 reg [7:0] value_high;
 
 always @(posedge clk) begin
+    seq_reset <= 1'b0;
+    write_enable <= 1'b0;
     if (valid) begin
         case (pkt_state)
             WAIT_SYNC: begin
@@ -97,7 +103,7 @@ always @(posedge clk) begin
                     pkt_state <= WAIT_ID;
             end
             WAIT_ID: begin
-                if (data >= 8'h01 && data <= 8'h0F) begin
+                if (data >= 8'h01 && data <= 8'h13) begin
                     param_id  <= data;
                     pkt_state <= WAIT_HIGH;
                 end else begin
@@ -156,7 +162,19 @@ always @(posedge clk) begin
                                ({value_high, data} > volume + 4 ||
                                 {value_high, data} + 4 < volume))
                                volume <= {value_high, data};
-                    8'h0F: seq_reset <= data[0];
+                     8'h0F: begin
+                            if (data[0])
+                                seq_reset <= 1'b1;
+                            end 
+                    8'h10: write_step <= data[3:0];
+
+                    8'h11: begin
+                        write_note <= data[6:0];
+                        write_enable <= 1;
+                    end
+                    
+                    8'h12: active_steps[15:8] <= data;
+                    8'h13: active_steps[7:0]  <= data;
                 endcase
                 pkt_state <= WAIT_SYNC;
             end
