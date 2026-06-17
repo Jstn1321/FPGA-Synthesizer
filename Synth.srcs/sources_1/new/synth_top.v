@@ -6,7 +6,7 @@ module synth_top(
     input [15:0] sw,
     output [3:0] an,
     output [6:0] seg,
-    output led
+    output [15:0] led
 );
 
 wire [15:0] attack, decay, sustain, release_time, bpm;
@@ -19,7 +19,7 @@ wire [6:0] kbd_note;
 wire [6:0] active_note;
 wire [6:0] seq_note_out;
 wire seq_gate_out;
-wire [15:0] bpm_display = active_note;
+//wire [15:0] bpm_display = active_note;
 
 wire [3:0] write_step;
 wire [6:0] write_note;
@@ -30,10 +30,8 @@ reg [18:0] refresh;
 always @(posedge clk) refresh <= refresh + 1;
 
 reg [15:0] bpm_latch;
-always @(posedge clk) begin
-    if (refresh[18:17] == 2'b11 && refresh[16:0] == 0)
-        bpm_latch <= bpm_display;
-end
+
+
 
 wire [3:0] digit0 = bpm_latch % 10;
 wire [3:0] digit1 = (bpm_latch / 10) % 10;
@@ -121,6 +119,7 @@ lfo u_lfo (
 wire [15:0] volume;
 wire seq_run;
 wire seq_reset;
+wire [7:0] dbg_write_count;
 
 uart_rx u_teensy (
     .clk          (clk),
@@ -142,7 +141,8 @@ uart_rx u_teensy (
     .lfo_depth    (lfo_depth),
     .seq_run (seq_run),
     .volume (volume),
-    .seq_reset  (seq_reset)
+    .seq_reset  (seq_reset),
+    .dbg_write_count(dbg_write_count)
 );
 
 wire step_pulse;
@@ -153,7 +153,7 @@ bpm_clock u_bpm(
     .running    (seq_run),
     .step_pulse (step_pulse)
 );
-
+wire [3:0] current_step_out;
 seq u_seq(
     .clk    (clk),
     .step_pulse (step_pulse),
@@ -165,10 +165,38 @@ seq u_seq(
     .active (active_steps),
     .note_out   (seq_note_out),
     .gate_out   (seq_gate_out),
-    .current_step   ()
+    .current_step(current_step_out)
 );
 assign gate_sig = seq_run ? seq_gate_out : (gate_from_uart | btn);
 assign active_note = seq_run ? seq_note_out : kbd_note;
-assign led = filtered_audio[15];
+//assign led = filtered_audio[15];
+
+reg [3:0] step_counter;
+always @(posedge clk) begin
+    if (step_pulse) step_counter <= step_counter + 1;
+end
+
+//wire [15:0] bpm_display = {12'b0, step_counter};
+//wire [15:0] bpm_display = bpm;
+wire [15:0] bpm_display = {9'b0, active_note};
+//wire [15:0] bpm_display = {8'b0, dbg_write_count};
+//wire [15:0] bpm_display = {12'b0, write_step};
+//wire [15:0] bpm_display = {9'b0, write_note};
+
+assign led = 16'b1 << current_step_out;
+reg [25:0] slow;
+always @(posedge clk) slow <= slow + 1;
+
+always @(posedge clk) begin
+    if (slow == 0)
+        bpm_latch <= bpm_display;
+end
+/*
+reg [6:0] last_write_note;
+always @(posedge clk) begin
+    if (write_enable) last_write_note <= write_note;
+end
+*/
+
 
 endmodule

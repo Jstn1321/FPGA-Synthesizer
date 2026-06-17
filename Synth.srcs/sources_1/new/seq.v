@@ -46,14 +46,17 @@ module seq(
     always @(posedge clk) begin
         if (reset) begin
             current_step <= 0;
-            gate_out <= 0;
+            note_out     <= 7'd60;
+            gate_out     <= 0;
+            for (i = 0; i < 16; i = i + 1)
+                notes[i] <= 7'd60;
         end else if (step_pulse) begin
-            current_step <= next_step;
-            note_out <= notes[next_step];
-            gate_out <= active[next_step] & running;
+            note_out     <= notes[current_step];
+            gate_out     <= active[current_step] & running;
+            current_step <= current_step + 1;
         end
     
         if (write_enable) notes[write_step] <= write_note;
     end
-
+    
 endmodule

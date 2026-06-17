@@ -97,7 +97,7 @@ void send_val(byte id, int val_127) {
 }
 
 void send_raw(byte id, int val) {
-    val = constrain(val, 0, 1022);
+    val = constrain(val, 0, 60000);
     Serial1.write(0xFF);
     Serial1.write(id);
     Serial1.write((val >> 8) & 0xFF);
@@ -370,6 +370,7 @@ void setup() {
     }
     sendActiveSteps();
     send_val(ID_SUSTAIN, v_sustain);
+    send_raw(ID_BPM, map(v_bpm, 0, 127, 100, 60000));
 }
 
 void loop() {
@@ -401,8 +402,8 @@ void loop() {
             current_note         = data1;
             gate_on              = true;
             seq_notes[edit_step] = data1;
-            send_val(ID_WRITE_STEP, edit_step);
-            send_val(ID_WRITE_NOTE, data1);
+            send_raw(ID_WRITE_STEP, edit_step);
+            send_raw(ID_WRITE_NOTE, data1);
             send_raw(ID_NOTE, data1);
             send_val(ID_GATE, 1);
             p_step = -1;  // force seq grid redraw
@@ -428,7 +429,7 @@ void loop() {
                 case CC_DECAY:     v_decay     = raw; send_val(ID_DECAY,     raw); break;
                 case CC_SUSTAIN:   v_sustain   = raw; send_val(ID_SUSTAIN,   raw); break;
                 case CC_RELEASE:   v_release   = raw; send_val(ID_RELEASE,   raw); break;
-                case CC_BPM:       v_bpm       = raw; send_val(ID_BPM,       raw); break;
+                case CC_BPM: v_bpm = raw; send_raw(ID_BPM, map(raw, 0, 127, 100, 60000)); break;
                 case CC_CUTOFF:    v_cutoff    = raw; send_val(ID_CUTOFF,    raw); break;
                 case CC_RESONANCE: v_resonance = raw; send_val(ID_RESONANCE, raw); break;
                 case CC_LFO_RATE:  v_lfo_rate  = raw; send_val(ID_LFO_RATE,  raw); break;
@@ -438,7 +439,7 @@ void loop() {
                 case ENCODER_CLICK_CC:
                     if (data2 > 63) {
                         seq_running = !seq_running;
-                        send_val(ID_SEQ_RUN, seq_running ? 1 : 0);
+                        send_raw(ID_SEQ_RUN, seq_running ? 1 : 0);
                     }
                     break;
 
