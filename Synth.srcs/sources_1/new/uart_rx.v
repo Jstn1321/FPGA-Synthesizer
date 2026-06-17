@@ -22,8 +22,7 @@ module uart_rx #(
     output reg [15:0] decay,
     output reg [15:0] sustain,
     output reg [15:0] release_time,
-    output reg [15:0] bpm,
-    output reg [7:0] dbg_write_count
+    output reg [15:0] bpm
 );
 
 localparam CLKS_PER_BIT = CLK_FREQ / BAUD_RATE;
@@ -169,7 +168,6 @@ always @(posedge clk) begin
                     8'h11: begin
                         write_note <= data[6:0];
                         write_enable <= 1;
-                        dbg_write_count <= dbg_write_count + 1;
                     end
                     
                     8'h12: active_steps[15:8] <= data;
