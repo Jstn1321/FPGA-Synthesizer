@@ -383,14 +383,14 @@ void loop() {
             send_raw(ID_WRITE_STEP, edit_step);
             send_raw(ID_WRITE_NOTE, data1);
             send_raw(ID_NOTE, data1);
-            send_val(ID_GATE, 1);
+            send_raw(ID_GATE, 1);
             p_step = -1;  
         }
 
 
         else if ((type == 0x80 || (type == 0x90 && data2 == 0)) && midi.getChannel() == 1) {
             gate_on = false;
-            send_val(ID_GATE, 0);
+            send_raw(ID_GATE, 0);
         }
 
 

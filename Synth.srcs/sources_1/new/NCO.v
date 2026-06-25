@@ -22,11 +22,12 @@
 
 module nco(
     input clk,
+    input sample_tick,
     input [31:0] increment,
     output reg [31:0] phase
     );
     
     always @ (posedge clk) begin
-        phase <= phase + increment;
+        if (sample_tick) phase <= phase + increment;
     end
 endmodule

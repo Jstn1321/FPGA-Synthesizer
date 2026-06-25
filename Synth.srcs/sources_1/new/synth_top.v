@@ -28,7 +28,7 @@ wire [3:0] write_step;
 wire [6:0] write_note;
 wire write_enable;
 wire [15:0] active_steps;
-
+wire sample_tick;
 reg [18:0] refresh;
 always @(posedge clk) refresh <= refresh + 1;
 
@@ -92,6 +92,7 @@ occilator u_occilator(
     .decay        (decay),
     .sustain      (sustain),
     .release_time (release_time),
+    .sample_tick(sample_tick),
     .sample       (audio)
 );
 
@@ -172,7 +173,7 @@ assign gate_sig = seq_run ? seq_gate_out : (gate_from_uart | btn);
 assign active_note = seq_run ? seq_note_out : kbd_note;
 //assign led = filtered_audio[15];
 wire signed [15:0] final_audio;
-wire [15:0] vol_scaled = {volume[9:0], 6'b0};
+wire [15:0] vol_scaled = volume << 6;
 
 vca u_volume (
     .clk      (clk),
@@ -183,12 +184,14 @@ vca u_volume (
 
 i2s_tx u_i2s (
     .clk      (clk),
-    .sample_l (final_audio),
-    .sample_r (final_audio), 
+    .sample_l (audio),
+    .sample_r (audio), 
     .bclk     (bclk),
     .lrclk    (lrclk),
-    .din      (din)
+    .din      (din),
+    .sample_tick(sample_tick)
 );
+
 
 reg [3:0] step_counter;
 always @(posedge clk) begin

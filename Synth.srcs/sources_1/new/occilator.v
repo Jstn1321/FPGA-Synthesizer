@@ -29,6 +29,7 @@ module occilator(
     input [15:0] decay,
     input [15:0] sustain,
     input [15:0] release_time,
+    input sample_tick,
     output signed [15:0] sample
     );
 
@@ -38,7 +39,8 @@ module occilator(
     nco u_nco (
     .clk(clk),
     .phase(phase),
-    .increment(increment)
+    .increment(increment),
+    .sample_tick(sample_tick)
     );
     
     waveforms u_wave (
