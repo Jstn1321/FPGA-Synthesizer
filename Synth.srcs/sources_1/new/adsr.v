@@ -1,78 +1,79 @@
 `timescale 1ns / 1ps
-//////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
-// 
-// Create Date: 06/12/2026 07:52:32 PM
-// Design Name: 
-// Module Name: adsr
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
-// Description: 
-// 
-// Dependencies: 
-// 
-// Revision:
-// Revision 0.01 - File Created
-// Additional Comments:
-// 
-//////////////////////////////////////////////////////////////////////////////////
-
-
 module adsr(
     input clk,
+    input sample_tick,
     input [15:0] attack,
-    input [15:0] sustain,
     input [15:0] decay,
+    input [15:0] sustain,
     input [15:0] release_time,
     input gate,
-    output reg [15:0] env_out
-    );
-    
-    localparam IDLE = 3'd0;
-    localparam ATTACK = 3'd1;
-    localparam DECAY = 3'd2;
-    localparam SUSTAIN = 3'd3;
-    localparam RELEASE = 3'd4;
-    
-    reg [2:0] ADSR_STATE;
-    
-    always @ (posedge clk) begin
-        case (ADSR_STATE)
+    output reg [15:0] env_out = 16'd0
+);
+
+localparam IDLE    = 3'd0;
+localparam ATTACK  = 3'd1;
+localparam DECAY   = 3'd2;
+localparam SUSTAIN = 3'd3;
+localparam RELEASE = 3'd4;
+
+reg [2:0] state = IDLE;
+
+wire [15:0] attack_scaled  = (attack  >> 6) + 1;
+wire [15:0] decay_scaled   = (decay   >> 6) + 1;
+wire [15:0] release_scaled = (release_time >> 6) + 1;
+wire [15:0] sustain_scaled = sustain << 6;
+
+always @(posedge clk) begin
+    if (sample_tick) begin
+        case (state)
             IDLE: begin
-                env_out <= 0;
-                if (gate) ADSR_STATE <= ATTACK;
-                end
-                
+                env_out <= 16'd0;
+                if (gate) state <= ATTACK;
+            end
+
             ATTACK: begin
-                if (env_out + attack >= 16'hFFFF) begin
+                if (!gate) begin
+                    state <= RELEASE;
+                end else if ({1'b0, env_out} + {1'b0, attack_scaled} >= 17'hFFFF) begin
                     env_out <= 16'hFFFF;
-                    ADSR_STATE <= DECAY;
-                end else if (!gate) ADSR_STATE <= RELEASE;
-                else env_out <= env_out + attack;
+                    state   <= DECAY;
+                end else begin
+                    env_out <= env_out + attack_scaled;
+                end
             end
-            
+
             DECAY: begin
-                if (env_out - decay <= sustain) begin
-                    env_out <= sustain;
-                    ADSR_STATE <= SUSTAIN;
-                end else if (!gate) ADSR_STATE <= RELEASE;
-                else env_out <= env_out - decay;
+                if (!gate) begin
+                    state <= RELEASE;
+                end else if (env_out <= sustain_scaled + decay_scaled) begin
+                    env_out <= sustain_scaled;
+                    state   <= SUSTAIN;
+                end else begin
+                    env_out <= env_out - decay_scaled;
+                end
             end
-            
+
             SUSTAIN: begin
-                env_out <= sustain;
-                if (!gate) ADSR_STATE <= RELEASE;
+                env_out <= sustain_scaled;
+                if (!gate) state <= RELEASE;
             end
-            
+
             RELEASE: begin
-                if (env_out <= release_time) begin
-                    env_out <= 0;
-                    ADSR_STATE <= IDLE;
-                end else env_out <= env_out - release_time;
-                if (gate) ADSR_STATE <= ATTACK;
+                if (gate) begin
+                    state <= ATTACK;
+                end else if (env_out <= release_scaled) begin
+                    env_out <= 16'd0;
+                    state   <= IDLE;
+                end else begin
+                    env_out <= env_out - release_scaled;
+                end
             end
-            endcase
-        end
+
+            default: begin
+                state   <= IDLE;
+                env_out <= 16'd0;
+            end
+        endcase
+    end
+end
 endmodule

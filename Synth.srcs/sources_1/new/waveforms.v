@@ -23,14 +23,41 @@
 module waveforms(
     input clk,
     input [31:0]phase,
+    input [31:0] increment,
     output signed [15:0] square,
     output signed [15:0] saw,
     output signed [15:0] triangle,
     output signed [15:0] sine
     );
-    assign square = phase[31] ? 16'sd32767 : -16'sd32767;
+    wire signed [15:0] raw_square =
+        phase[31] ? 16'sd32767 : -16'sd32768;
     
-    assign saw = $signed(phase[31:16]) - 16'sd32768;
+    wire signed [15:0] raw_saw =
+        $signed(phase[31:16]) - 16'sd32768;
+    
+    reg [31:0] prev_phase = 0;
+    
+    reg signed [15:0] blep_square = 0;
+    reg signed [15:0] blep_saw = 0;
+    
+    wire wrap = (phase < prev_phase);
+    
+    always @(posedge clk) begin
+        prev_phase <= phase;
+    
+        // decay previous correction
+        blep_square <= blep_square - (blep_square >>> 2);
+        blep_saw    <= blep_saw    - (blep_saw    >>> 2);
+    
+        // inject correction at discontinuity
+        if (wrap) begin
+            blep_square <= 16'sd32767;
+            blep_saw    <= 16'sd32767;
+        end
+    end
+    
+    assign square = raw_square - blep_square;
+    assign saw    = raw_saw    - blep_saw;
     
     wire [14:0] half = phase[30:16];
     assign triangle = phase[31]

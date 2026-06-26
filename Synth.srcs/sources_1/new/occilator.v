@@ -25,11 +25,11 @@ module occilator(
     input [31:0] increment,
     input [3:0] waveform,
     input gate,
+    input sample_tick,
     input [15:0] attack,
     input [15:0] decay,
     input [15:0] sustain,
     input [15:0] release_time,
-    input sample_tick,
     output signed [15:0] sample
     );
 
@@ -39,13 +39,14 @@ module occilator(
     nco u_nco (
     .clk(clk),
     .phase(phase),
-    .increment(increment),
-    .sample_tick(sample_tick)
+    .sample_tick(sample_tick),
+    .increment(increment)
     );
     
     waveforms u_wave (
     .clk      (clk),
     .phase    (phase),
+    .increment(increment),
     .square   (square),
     .saw      (saw),
     .triangle (triangle),
@@ -70,6 +71,7 @@ module occilator(
     .decay  (decay),
     .release_time   (release_time),
     .gate   (gate),
+    .sample_tick    (sample_tick),
     .env_out (env)
     );
     
@@ -80,4 +82,5 @@ module occilator(
     .audio_out  (sample)
     );
 
+//assign sample = reg_sample;
 endmodule

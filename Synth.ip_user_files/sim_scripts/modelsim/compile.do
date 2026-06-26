@@ -2,9 +2,11 @@ vlib modelsim_lib/work
 vlib modelsim_lib/msim
 
 vlib modelsim_lib/msim/xpm
+vlib modelsim_lib/msim/blk_mem_gen_v8_4_12
 vlib modelsim_lib/msim/xil_defaultlib
 
 vmap xpm modelsim_lib/msim/xpm
+vmap blk_mem_gen_v8_4_12 modelsim_lib/msim/blk_mem_gen_v8_4_12
 vmap xil_defaultlib modelsim_lib/msim/xil_defaultlib
 
 vlog -work xpm  -incr -mfcu  -sv "+incdir+../../../../../../AMDDesignTools/2025.2/Vivado/data/rsb/busdef" \
@@ -13,8 +15,24 @@ vlog -work xpm  -incr -mfcu  -sv "+incdir+../../../../../../AMDDesignTools/2025.
 vcom -work xpm  -93  \
 "C:/AMDDesignTools/2025.2/Vivado/data/ip/xpm/xpm_VCOMP.vhd" \
 
+vlog -work blk_mem_gen_v8_4_12  -incr -mfcu  "+incdir+../../../../../../AMDDesignTools/2025.2/Vivado/data/rsb/busdef" \
+"../../ipstatic/simulation/blk_mem_gen_v8_4.v" \
+
 vlog -work xil_defaultlib  -incr -mfcu  "+incdir+../../../../../../AMDDesignTools/2025.2/Vivado/data/rsb/busdef" \
+"../../../Synth.gen/sources_1/ip/blk_mem_gen_1/sim/blk_mem_gen_1.v" \
+"../../../Synth.gen/sources_1/ip/blk_mem_gen_0/sim/blk_mem_gen_0.v" \
+"../../../Synth.srcs/sources_1/new/NCO.v" \
+"../../../Synth.srcs/sources_1/new/adsr.v" \
+"../../../Synth.srcs/sources_1/new/bpm_clock.v" \
+"../../../Synth.srcs/sources_1/new/i2s_tx.v" \
+"../../../Synth.srcs/sources_1/new/lfo.v" \
+"../../../Synth.srcs/sources_1/new/note_to_increment.v" \
+"../../../Synth.srcs/sources_1/new/occilator.v" \
+"../../../Synth.srcs/sources_1/new/seq.v" \
 "../../../Synth.srcs/sources_1/new/uart_rx.v" \
+"../../../Synth.srcs/sources_1/new/vca.v" \
+"../../../Synth.srcs/sources_1/new/vcf.v" \
+"../../../Synth.srcs/sources_1/new/waveforms.v" \
 "../../../Synth.srcs/sources_1/new/synth_top.v" \
 
 vlog -work xil_defaultlib \

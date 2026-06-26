@@ -56,8 +56,6 @@ module blk_mem_gen_1_sv (
   (* X_INTERFACE_IGNORE = "true" *)
   input wire clka,
   (* X_INTERFACE_IGNORE = "true" *)
-  input wire ena,
-  (* X_INTERFACE_IGNORE = "true" *)
   input wire [7:0] addra,
   (* X_INTERFACE_IGNORE = "true" *)
   output wire [15:0] douta
@@ -65,7 +63,6 @@ module blk_mem_gen_1_sv (
 
   blk_mem_gen_1 inst (
     .clka(clka),
-    .ena(ena),
     .addra(addra),
     .douta(douta)
   );

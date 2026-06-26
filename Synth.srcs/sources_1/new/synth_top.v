@@ -22,13 +22,13 @@ wire [6:0] kbd_note;
 wire [6:0] active_note;
 wire [6:0] seq_note_out;
 wire seq_gate_out;
+wire sample_tick;
 //wire [15:0] bpm_display = active_note;
 
 wire [3:0] write_step;
 wire [6:0] write_note;
 wire write_enable;
 wire [15:0] active_steps;
-wire sample_tick;
 reg [18:0] refresh;
 always @(posedge clk) refresh <= refresh + 1;
 
@@ -73,7 +73,7 @@ end
 assign seg = seg_reg;
 
 
-
+//wire [31:0] increment = 32'd39370533;
 wire [31:0] increment;
 note_to_increment u_note_to_increment(
     .clk       (clk),
@@ -83,6 +83,7 @@ note_to_increment u_note_to_increment(
 wire gate_sig;
 wire gate_from_uart;
 wire signed [15:0] audio;
+
 occilator u_occilator(
     .clk          (clk),
     .increment    (increment),
@@ -92,8 +93,8 @@ occilator u_occilator(
     .decay        (decay),
     .sustain      (sustain),
     .release_time (release_time),
-    .sample_tick(sample_tick),
-    .sample       (audio)
+    .sample       (audio),
+    .sample_tick    (sample_tick)
 );
 
 wire signed [15:0] filtered_audio;
@@ -184,8 +185,8 @@ vca u_volume (
 
 i2s_tx u_i2s (
     .clk      (clk),
-    .sample_l (audio),
-    .sample_r (audio), 
+    .sample_l (final_audio),
+    .sample_r (final_audio), 
     .bclk     (bclk),
     .lrclk    (lrclk),
     .din      (din),
@@ -204,6 +205,7 @@ wire [15:0] bpm_display = {9'b0, active_note};
 //wire [15:0] bpm_display = {8'b0, dbg_write_count};
 //wire [15:0] bpm_display = {12'b0, write_step};
 //wire [15:0] bpm_display = {9'b0, write_note};
+//wire [15:0] bpm_display = sustain;
 
 assign led = 16'b1 << current_step_out;
 reg [25:0] slow;
@@ -213,12 +215,37 @@ always @(posedge clk) begin
     if (slow == 0)
         bpm_latch <= bpm_display;
 end
-/*
+
 reg [6:0] last_write_note;
 always @(posedge clk) begin
     if (write_enable) last_write_note <= write_note;
 end
+
+
+
+/*
+localparam integer HALF_PERIOD = 100_000_000 / (2 * 440);
+
+reg [31:0] test_cnt = 0;
+reg signed [15:0] test_sample = 16'h6000;
+
+always @(posedge clk) begin
+    if (test_cnt == HALF_PERIOD-1) begin
+        test_cnt <= 0;
+        test_sample <= -test_sample;
+    end
+    else begin
+        test_cnt <= test_cnt + 1;
+    end
+end
+
+i2s_tx u_i2s (
+    .clk      (clk),
+    .sample_l (test_sample),
+    .sample_r (test_sample),
+    .bclk     (bclk),
+    .lrclk    (lrclk),
+    .din      (din)
+);
 */
-
-
 endmodule
