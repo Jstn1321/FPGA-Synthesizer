@@ -174,11 +174,11 @@ assign gate_sig = seq_run ? seq_gate_out : (gate_from_uart | btn);
 assign active_note = seq_run ? seq_note_out : kbd_note;
 //assign led = filtered_audio[15];
 wire signed [15:0] final_audio;
-wire [15:0] vol_scaled = volume << 6;
+wire [15:0] vol_scaled = {volume[9:0], 6'b0};
 
 vca u_volume (
     .clk      (clk),
-    .audio_in (filtered_audio),
+    .audio_in (filtered_audio), //original is filtered_audio
     .env      (vol_scaled),
     .audio_out(final_audio)
 );

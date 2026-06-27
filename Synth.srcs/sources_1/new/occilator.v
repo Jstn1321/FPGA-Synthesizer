@@ -53,7 +53,7 @@ module occilator(
     .sine     (sine)
     );
     
-    reg [15:0] reg_sample;
+    reg signed [15:0] reg_sample;
     //0 is sqr 1 is saw 2 is tri 3 is sin
     always @ (posedge clk) begin
         if (waveform[0]) reg_sample <= square;

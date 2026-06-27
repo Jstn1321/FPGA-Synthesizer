@@ -21,7 +21,7 @@ reg [2:0] state = IDLE;
 wire [15:0] attack_scaled  = (attack  >> 6) + 1;
 wire [15:0] decay_scaled   = (decay   >> 6) + 1;
 wire [15:0] release_scaled = (release_time >> 6) + 1;
-wire [15:0] sustain_scaled = sustain << 6;
+wire [15:0] sustain_scaled = (sustain > 10'd1023) ? 16'hFFFF : sustain << 6;
 
 always @(posedge clk) begin
     if (sample_tick) begin

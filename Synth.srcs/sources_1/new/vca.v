@@ -27,10 +27,10 @@ module vca(
     output reg signed [15:0] audio_out
     );
     
-    reg signed [31:0] temp;
+    wire signed [31:0] mult;
+
+    assign mult = audio_in * $signed({1'b0, env});
     
-    always @ (posedge clk) begin
-        temp <= audio_in * $signed({1'b0, env});
-        audio_out <= temp[30:15];
-    end
+    always @(posedge clk)
+        audio_out <= mult[30:15];
 endmodule

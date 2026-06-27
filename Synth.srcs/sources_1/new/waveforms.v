@@ -45,23 +45,27 @@ module waveforms(
     always @(posedge clk) begin
         prev_phase <= phase;
     
-        // decay previous correction
+
         blep_square <= blep_square - (blep_square >>> 2);
         blep_saw    <= blep_saw    - (blep_saw    >>> 2);
     
-        // inject correction at discontinuity
+
         if (wrap) begin
             blep_square <= 16'sd32767;
             blep_saw    <= 16'sd32767;
         end
     end
     
-    assign square = raw_square - blep_square;
+    //assign square = raw_square - blep_square;
+    assign square = raw_square;
     assign saw    = raw_saw    - blep_saw;
     
-    wire [14:0] half = phase[30:16];
-    assign triangle = phase[31]
-        ? 16'sd32767 - $signed({1'b0, half}) : $signed({1'b0, half}) - 16'sd32768;  // rising:  -32768 → -1
+    wire signed [15:0] triangle_raw;
+
+    wire [15:0] tri_phase =
+        phase[31] ? ~phase[30:15] : phase[30:15];
+    
+    assign triangle = $signed(tri_phase) - 16'sd32768;
     
     wire [7:0] addr = phase[31:24];
      
