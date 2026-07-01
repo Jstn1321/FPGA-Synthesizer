@@ -17,6 +17,7 @@ Adafruit_ST7735 tft2 = Adafruit_ST7735(TFT2_CS, TFT2_DC, TFT2_RST);
 USBHost myusb;
 MIDIDevice midi(myusb);
 
+const int REST_BUTTON = 2;
 
 #define COL_BG     0x0841
 #define COL_ACCENT 0x07FF
@@ -115,10 +116,10 @@ void drawEnvelope1() {
     tft1.fillRect(ex, ey, ew, eh, COL_BG);
     tft1.drawRect(ex, ey, ew, eh, COL_DIM);
 
-    int ax = map(v_attack,  0, 127, 3, ew/4);
-    int dx = map(v_decay,   0, 127, 3, ew/4);
+    int ax = map(127-v_attack,  0, 127, 3, ew/4);
+    int dx = map(127-v_decay,   0, 127, 3, ew/4);
     int sy = map(v_sustain, 0, 127, 4, eh-6);
-    int rx = map(v_release, 0, 127, 3, ew/4);
+    int rx = map(127-v_release, 0, 127, 3, ew/4);
     int hold = ew/6;
 
     int x0 = ex+2,     y0 = ey+eh-3;
@@ -274,6 +275,17 @@ void drawSeqGrid() {
         tft2.print(NOTE_NAMES[seq_notes[i] % 12]);
         tft2.setCursor(x+2, y+12);
         tft2.print(seq_notes[i] / 12 - 1);
+
+        if (!seq_active[i]) {
+        tft2.setCursor(x + 2, y + 8);
+        tft2.setTextColor(COL_RED);
+        tft2.print("--");
+    } else {
+        tft2.setCursor(x + 2, y + 2);
+        tft2.print(NOTE_NAMES[seq_notes[i] % 12]);
+        tft2.setCursor(x + 2, y + 12);
+        tft2.print(seq_notes[i] / 12 - 1);
+    }
     }
 
 
@@ -335,6 +347,8 @@ void setup() {
     Serial1.begin(115200);
     myusb.begin();
 
+    pinMode(REST_BUTTON, INPUT_PULLUP);
+
     tft1.initR(INITR_BLACKTAB);
     tft1.setRotation(1);
     drawStaticUI1();
@@ -350,11 +364,23 @@ void setup() {
     }
     sendActiveSteps();
     send_val(ID_SUSTAIN, v_sustain);
-    send_raw(ID_BPM, map(v_bpm, 0, 127, 100, 60000));
+    send_raw(ID_BPM, map(v_bpm, 0, 127, 10, 240));
 }
 
 void loop() {
     myusb.Task();
+
+    static bool lastRestButton = HIGH;
+
+    bool restButton = digitalRead(REST_BUTTON);
+
+    if (lastRestButton == HIGH && restButton == LOW) {
+        seq_active[edit_step] = !seq_active[edit_step];
+        sendActiveSteps();
+        p_step = -1; 
+    }
+
+    lastRestButton = restButton;
 
     static bool was_connected = false;
     if (midi && !was_connected) {
@@ -415,7 +441,7 @@ void loop() {
                 case CC_DECAY:     v_decay     = raw; send_val(ID_DECAY,     raw); break;
                 case CC_SUSTAIN:   v_sustain   = raw; send_val(ID_SUSTAIN,   raw); break;
                 case CC_RELEASE:   v_release   = raw; send_val(ID_RELEASE,   raw); break;
-                case CC_BPM: v_bpm = raw; send_raw(ID_BPM, map(raw, 0, 127, 100, 60000)); break;
+                case CC_BPM: v_bpm = raw; send_raw(ID_BPM, map(v_bpm, 0, 127, 10, 240)); break;
                 case CC_CUTOFF:    v_cutoff    = raw; send_val(ID_CUTOFF,    raw); break;
                 case CC_RESONANCE: v_resonance = raw; send_val(ID_RESONANCE, raw); break;
                 case CC_LFO_RATE:  v_lfo_rate  = raw; send_val(ID_LFO_RATE,  raw); break;

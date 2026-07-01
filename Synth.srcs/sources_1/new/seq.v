@@ -25,6 +25,7 @@ module seq(
     input step_pulse,
     input running,
     input reset,
+    input gate_pulse,
     input [6:0] write_note,
     input [3:0] write_step,
     input write_enable,
@@ -51,12 +52,13 @@ module seq(
             for (i = 0; i < 16; i = i + 1)
                 notes[i] <= 7'd60;
         end else if (step_pulse) begin
-            note_out     <= notes[current_step];
-            gate_out     <= active[current_step] & running;
+            note_out     <= notes[current_step];//note_out     <= notes[current_step];
+            gate_out     <= active[current_step] & running & gate_pulse;
             current_step <= current_step + 1;
+        end else begin
+            gate_out <= gate_out & gate_pulse;
         end
-    
-        if (write_enable) notes[write_step] <= write_note;
+            if (write_enable) notes[write_step] <= write_note;
     end
     
 endmodule

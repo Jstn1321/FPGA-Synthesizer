@@ -24,7 +24,7 @@ wire [6:0] seq_note_out;
 wire seq_gate_out;
 wire sample_tick;
 //wire [15:0] bpm_display = active_note;
-
+wire gate_pulse;
 wire [3:0] write_step;
 wire [6:0] write_note;
 wire write_enable;
@@ -154,7 +154,8 @@ bpm_clock u_bpm(
     .clk    (clk),
     .bpm    (bpm),
     .running    (seq_run),
-    .step_pulse (step_pulse)
+    .step_pulse (step_pulse),
+    .gate_pulse(gate_pulse)
 );
 wire [3:0] current_step_out;
 seq u_seq(
@@ -168,7 +169,8 @@ seq u_seq(
     .active (active_steps),
     .note_out   (seq_note_out),
     .gate_out   (seq_gate_out),
-    .current_step(current_step_out)
+    .current_step(current_step_out),
+    .gate_pulse(gate_pulse)
 );
 assign gate_sig = seq_run ? seq_gate_out : (gate_from_uart | btn);
 assign active_note = seq_run ? seq_note_out : kbd_note;
@@ -200,12 +202,13 @@ always @(posedge clk) begin
 end
 
 //wire [15:0] bpm_display = {12'b0, step_counter};
-//wire [15:0] bpm_display = bpm;
-wire [15:0] bpm_display = {9'b0, active_note};
+wire [15:0] bpm_display = bpm;
+//wire [15:0] bpm_display = {9'b0, active_note};
 //wire [15:0] bpm_display = {8'b0, dbg_write_count};
 //wire [15:0] bpm_display = {12'b0, write_step};
 //wire [15:0] bpm_display = {9'b0, write_note};
 //wire [15:0] bpm_display = sustain;
+//wire [15:0] bpm_display = {9'b0, seq_note_out};
 
 assign led = 16'b1 << current_step_out;
 reg [25:0] slow;
