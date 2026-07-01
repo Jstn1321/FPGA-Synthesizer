@@ -63,6 +63,7 @@ MIDIDevice midi(myusb);
 #define ID_ACTIVE_HI    0x12
 #define ID_ACTIVE_LO    0x13
 
+int keys_held = 0;
 
 byte seq_notes[16];
 bool seq_active[16];
@@ -383,14 +384,21 @@ void loop() {
             send_raw(ID_WRITE_STEP, edit_step);
             send_raw(ID_WRITE_NOTE, data1);
             send_raw(ID_NOTE, data1);
-            send_raw(ID_GATE, 1);
+            keys_held++;
+            current_note = data1;
+            if (keys_held == 1) send_raw(ID_GATE, 1);
+            send_raw(ID_NOTE, data1);
             p_step = -1;  
         }
 
 
         else if ((type == 0x80 || (type == 0x90 && data2 == 0)) && midi.getChannel() == 1) {
-            gate_on = false;
-            send_raw(ID_GATE, 0);
+            keys_held--;
+            if (keys_held <= 0) {
+                keys_held = 0;
+                gate_on = false;
+                send_raw(ID_GATE, 0);
+            }
         }
 
 
