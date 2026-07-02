@@ -18,8 +18,8 @@ wire [15:0] lfo_rate, lfo_depth;
 reg [15:0] mod_cutoff;
 reg [15:0] alpha_pipe;
 wire signed [15:0] lfo_out;
-wire [6:0] kbd_note;
-wire [6:0] active_note;
+//wire [6:0] kbd_note;
+//wire [6:0] active_note;
 wire [6:0] seq_note_out;
 wire seq_gate_out;
 wire sample_tick;
@@ -30,6 +30,12 @@ wire [6:0] write_note;
 wire write_enable;
 wire [15:0] active_steps;
 reg [18:0] refresh;
+wire note_event;
+wire note_on;
+wire [6:0] event_note;
+
+wire gate0, gate1, gate2, gate3;
+wire [6:0] note0, note1, note2, note3;
 always @(posedge clk) refresh <= refresh + 1;
 
 reg [15:0] bpm_latch;
@@ -72,30 +78,93 @@ end
 
 assign seg = seg_reg;
 
+//wire [31:0] increment;
+//note_to_increment u_note_to_increment(
+//    .clk       (clk),
+//    .note      (active_note),
+//    .increment (increment)
+//);
+//wire gate_sig;
+//wire gate_from_uart;
+//wire signed [15:0] audio;
 
-//wire [31:0] increment = 32'd39370533;
-wire [31:0] increment;
-note_to_increment u_note_to_increment(
-    .clk       (clk),
-    .note      (active_note),
-    .increment (increment)
-);
-wire gate_sig;
-wire gate_from_uart;
-wire signed [15:0] audio;
+//occilator u_occilator(
+//    .clk          (clk),
+//    .increment    (increment),
+//    .waveform     (sw[3:0]),
+//    .gate         (gate_sig),
+//    .attack       (attack),
+//    .decay        (decay),
+//    .sustain      (sustain),
+//    .release_time (release_time),
+//    .sample       (audio),
+//    .sample_tick    (sample_tick)
+//);
 
-occilator u_occilator(
-    .clk          (clk),
-    .increment    (increment),
-    .waveform     (sw[3:0]),
-    .gate         (gate_sig),
-    .attack       (attack),
-    .decay        (decay),
-    .sustain      (sustain),
-    .release_time (release_time),
-    .sample       (audio),
-    .sample_tick    (sample_tick)
+wire signed [15:0] audio0;
+wire signed [15:0] audio1;
+wire signed [15:0] audio2;
+wire signed [15:0] audio3;
+
+voice voice0(
+    .clk(clk),
+    .note(note0),
+    .gate(gate0),
+    .waveform(sw[3:0]),
+    .attack(attack),
+    .decay(decay),
+    .sustain(sustain),
+    .release_time(release_time),
+    .sample_tick(sample_tick),
+    .sample(audio0)
 );
+
+voice voice1(
+    .clk(clk),
+    .note(note1),
+    .gate(gate1),
+    .waveform(sw[3:0]),
+    .attack(attack),
+    .decay(decay),
+    .sustain(sustain),
+    .release_time(release_time),
+    .sample_tick(sample_tick),
+    .sample(audio1)
+);
+
+voice voice2(
+    .clk(clk),
+    .note(note2),
+    .gate(gate2),
+    .waveform(sw[3:0]),
+    .attack(attack),
+    .decay(decay),
+    .sustain(sustain),
+    .release_time(release_time),
+    .sample_tick(sample_tick),
+    .sample(audio2)
+);
+
+voice voice3(
+    .clk(clk),
+    .note(note3),
+    .gate(gate3),
+    .waveform(sw[3:0]),
+    .attack(attack),
+    .decay(decay),
+    .sustain(sustain),
+    .release_time(release_time),
+    .sample_tick(sample_tick),
+    .sample(audio3)
+);
+
+wire signed [18:0] mix =
+    $signed(audio0) +
+    $signed(audio1) +
+    $signed(audio2) +
+    $signed(audio3);
+
+wire signed [15:0] audio = mix >>> 2;
 
 wire signed [15:0] filtered_audio;
 wire signed [31:0] lfo_scaled_wide = lfo_out * $signed({1'b0, lfo_depth});
@@ -145,7 +214,29 @@ uart_rx u_teensy (
     .lfo_depth    (lfo_depth),
     .seq_run (seq_run),
     .volume (volume),
-    .seq_reset  (seq_reset)
+    .seq_reset  (seq_reset),
+    .note_event(note_event),
+    .note_on(note_on),
+    .event_note(event_note)
+);
+
+wire alloc_event = seq_run ? gate_pulse : note_event;
+wire alloc_gate  = seq_run ? seq_gate_out : note_on;
+wire [6:0] alloc_note = seq_run ? seq_note_out : event_note;
+
+voice_allocator allocator(
+    .clk(clk),
+    .note_event(alloc_event),
+    .note_on(alloc_gate),
+    .event_note(alloc_note),
+    .gate0(gate0),
+    .gate1(gate1),
+    .gate2(gate2),
+    .gate3(gate3),
+    .note0(note0),
+    .note1(note1),
+    .note2(note2),
+    .note3(note3)
 );
 
 wire step_pulse;
@@ -154,8 +245,7 @@ bpm_clock u_bpm(
     .clk    (clk),
     .bpm    (bpm),
     .running    (seq_run),
-    .step_pulse (step_pulse),
-    .gate_pulse(gate_pulse)
+    .step_pulse (step_pulse)
 );
 wire [3:0] current_step_out;
 seq u_seq(
@@ -170,10 +260,10 @@ seq u_seq(
     .note_out   (seq_note_out),
     .gate_out   (seq_gate_out),
     .current_step(current_step_out),
-    .gate_pulse(gate_pulse)
+    .gate_pulse(seq_gate_out)
 );
-assign gate_sig = seq_run ? seq_gate_out : (gate_from_uart | btn);
-assign active_note = seq_run ? seq_note_out : kbd_note;
+//assign gate_sig = seq_run ? seq_gate_out : (gate_from_uart | btn);
+//assign active_note = seq_run ? seq_note_out : kbd_note;
 //assign led = filtered_audio[15];
 wire signed [15:0] final_audio;
 wire [15:0] vol_scaled = {volume[9:0], 6'b0};

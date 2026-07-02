@@ -271,21 +271,18 @@ void drawSeqGrid() {
         tft2.fillRect(x, y, 17, 24, col);
         tft2.setTextColor(COL_BG);
         tft2.setTextSize(1);
-        tft2.setCursor(x+2, y+2);
-        tft2.print(NOTE_NAMES[seq_notes[i] % 12]);
-        tft2.setCursor(x+2, y+12);
-        tft2.print(seq_notes[i] / 12 - 1);
-
-        if (!seq_active[i]) {
-        tft2.setCursor(x + 2, y + 8);
-        tft2.setTextColor(COL_RED);
-        tft2.print("--");
-    } else {
-        tft2.setCursor(x + 2, y + 2);
-        tft2.print(NOTE_NAMES[seq_notes[i] % 12]);
-        tft2.setCursor(x + 2, y + 12);
-        tft2.print(seq_notes[i] / 12 - 1);
-    }
+        if (!seq_active[i + 8]) {
+          tft2.setCursor(x + 2, y + 8);
+          tft2.setTextColor(COL_RED);
+          tft2.print("--");
+      }
+      else {
+          tft2.setTextColor(COL_BG);
+          tft2.setCursor(x + 2, y + 2);
+          tft2.print(NOTE_NAMES[seq_notes[i + 8] % 12]);
+          tft2.setCursor(x + 2, y + 12);
+          tft2.print(seq_notes[i + 8] / 12 - 1);
+      }
     }
 
 
@@ -301,12 +298,20 @@ void drawSeqGrid() {
             col = COL_DIM;
 
         tft2.fillRect(x, y, 17, 24, col);
-        tft2.setTextColor(COL_BG);
         tft2.setTextSize(1);
-        tft2.setCursor(x+2, y+2);
-        tft2.print(NOTE_NAMES[seq_notes[i+8] % 12]);
-        tft2.setCursor(x+2, y+12);
-        tft2.print(seq_notes[i+8] / 12 - 1);
+
+        if (!seq_active[i + 8]) {
+            tft2.setCursor(x + 2, y + 8);
+            tft2.setTextColor(COL_RED);
+            tft2.print("--");
+        }
+        else {
+            tft2.setTextColor(COL_BG);
+            tft2.setCursor(x + 2, y + 2);
+            tft2.print(NOTE_NAMES[seq_notes[i + 8] % 12]);
+            tft2.setCursor(x + 2, y + 12);
+            tft2.print(seq_notes[i + 8] / 12 - 1);
+        }
     }
 }
 
@@ -342,6 +347,11 @@ void updateDisplay2() {
     drawSeqGrid();
 }
 
+void sendNoteEvent(byte note, bool on)
+{
+    send_raw(ID_NOTE, note);
+    send_raw(ID_GATE, on ? 1 : 0);
+}
 
 void setup() {
     Serial1.begin(115200);
@@ -409,22 +419,21 @@ void loop() {
             seq_notes[edit_step] = data1;
             send_raw(ID_WRITE_STEP, edit_step);
             send_raw(ID_WRITE_NOTE, data1);
-            send_raw(ID_NOTE, data1);
+            sendNoteEvent(data1, true);
             keys_held++;
             current_note = data1;
-            if (keys_held == 1) send_raw(ID_GATE, 1);
-            send_raw(ID_NOTE, data1);
             p_step = -1;  
         }
 
 
         else if ((type == 0x80 || (type == 0x90 && data2 == 0)) && midi.getChannel() == 1) {
+            sendNoteEvent(data1, false);
+
             keys_held--;
-            if (keys_held <= 0) {
+            if (keys_held < 0)
                 keys_held = 0;
-                gate_on = false;
-                send_raw(ID_GATE, 0);
-            }
+
+            gate_on = (keys_held > 0);
         }
 
 

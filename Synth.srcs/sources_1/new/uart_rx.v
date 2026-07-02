@@ -22,7 +22,10 @@ module uart_rx #(
     output reg [15:0] decay,
     output reg [15:0] sustain,
     output reg [15:0] release_time,
-    output reg [15:0] bpm
+    output reg [15:0] bpm,
+    output reg note_event,
+    output reg note_on,
+    output reg [6:0] event_note
 );
 
 localparam CLKS_PER_BIT = CLK_FREQ / BAUD_RATE;
@@ -41,6 +44,8 @@ reg        valid;
 
 reg rx_sync1 = 1'b1;
 reg rx_sync2 = 1'b1;
+
+reg [6:0] current_note;
 
 always @(posedge clk) begin
     rx_sync1 <= rx;
@@ -96,6 +101,7 @@ reg [7:0] value_high;
 always @(posedge clk) begin
     seq_reset <= 1'b0;
     write_enable <= 1'b0;
+    note_event <= 0;
     if (valid) begin
         case (pkt_state)
             WAIT_SYNC: begin
@@ -134,10 +140,18 @@ always @(posedge clk) begin
                                release_time <= {value_high, data};
                     8'h05: bpm <= {value_high, data};
                     8'h06: begin
-                            if (data <= 8'd127)
-                                    note <= data[6:0];
-                            end     
-                    8'h07: gate_out <= data[0];
+                        if (data <= 8'd127) begin
+                            current_note <= data[6:0];
+                            note <= data[6:0];      // Keep this for compatibility
+                        end
+                    end  
+                    8'h07: begin
+                        gate_out   <= data[0];
+                    
+                        event_note <= current_note;
+                        note_on    <= data[0];
+                        note_event <= 1'b1;
+                    end
                     8'h08: if ({value_high, data} <= 1023 &&
                                ({value_high, data} > cutoff + 4 ||
                                 {value_high, data} + 4 < cutoff))
