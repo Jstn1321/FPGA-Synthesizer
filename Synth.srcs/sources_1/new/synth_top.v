@@ -219,9 +219,9 @@ uart_rx u_teensy (
     .note_on(note_on),
     .event_note(event_note)
 );
-
-wire alloc_event = seq_run ? gate_pulse : note_event;
-wire alloc_gate  = seq_run ? seq_gate_out : note_on;
+wire seq_note_event;
+wire alloc_event = seq_run ? seq_note_event : note_event;
+wire alloc_gate = seq_run ? seq_gate_out : note_on;
 wire [6:0] alloc_note = seq_run ? seq_note_out : event_note;
 
 voice_allocator allocator(
@@ -245,9 +245,11 @@ bpm_clock u_bpm(
     .clk    (clk),
     .bpm    (bpm),
     .running    (seq_run),
-    .step_pulse (step_pulse)
+    .step_pulse (step_pulse),
+    .gate_pulse(gate_pulse)
 );
 wire [3:0] current_step_out;
+
 seq u_seq(
     .clk    (clk),
     .step_pulse (step_pulse),
@@ -260,7 +262,8 @@ seq u_seq(
     .note_out   (seq_note_out),
     .gate_out   (seq_gate_out),
     .current_step(current_step_out),
-    .gate_pulse(seq_gate_out)
+    .gate_pulse(gate_pulse),
+    .note_event(seq_note_event)
 );
 //assign gate_sig = seq_run ? seq_gate_out : (gate_from_uart | btn);
 //assign active_note = seq_run ? seq_note_out : kbd_note;

@@ -80,22 +80,19 @@ always @(posedge clk) begin
 
         else begin
 
-            if (used0 && note0 == event_note) begin
+            if (used0) begin
                 used0 <= 0;
                 gate0 <= 0;
             end
-
-            if (used1 && note1 == event_note) begin
+            else if (used1) begin
                 used1 <= 0;
                 gate1 <= 0;
             end
-
-            if (used2 && note2 == event_note) begin
+            else if (used2) begin
                 used2 <= 0;
                 gate2 <= 0;
             end
-
-            if (used3 && note3 == event_note) begin
+            else if (used3) begin
                 used3 <= 0;
                 gate3 <= 0;
             end
